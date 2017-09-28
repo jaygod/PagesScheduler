@@ -14,7 +14,8 @@ import scala.concurrent.duration._
   */
 object SchedulerService extends LazyLogging with ActorSystemSupport {
 
-  def start(facebookService: FacebookService, calendarService: CalendarService): Unit = {
+  def start(facebookService: FacebookService): Unit = {
+    val calendarService = new CalendarService() // TODO
     val actor = actorSystem.actorOf(SchedulerActor.props(calendarService, facebookService))
     val _ = actorSystem.scheduler.schedule(500.milliseconds, 10.second, actor, SendNotifications)
     logger.info("PagesScheduler started!")

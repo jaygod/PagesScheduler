@@ -1,12 +1,13 @@
 package common.api
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.ExceptionHandler
+import com.typesafe.scalalogging.LazyLogging
+import common.ActorSystemSupport
 import facebook.api.FacebookProtocol
 import facebook.service.FacebookService
-import google.service.CalendarService
 import scheduler.service.SchedulerService
 
 import scala.util.{Failure, Success}
@@ -14,10 +15,10 @@ import scala.util.{Failure, Success}
 /**
   * Created by kuba on 14/09/2017.
   */
-class PagesSchedulerApi(facebookService: FacebookService, calendarService: CalendarService)
-  extends CustomExceptionHandler with FacebookProtocol with SprayJsonSupport {
+class PagesSchedulerApi(facebookService: FacebookService)
+  extends CustomExceptionHandler with FacebookProtocol with SprayJsonSupport with LazyLogging with ActorSystemSupport {
 
-  val routes = authUrlRoute ~ authCallbackRoute ~ startSchedulerRoute
+  val routes = authUrlRoute ~ authCallbackRoute ~ startSchedulerRoute ~ helloWorldRoute
 
   private def authUrlRoute =
     path("auth" / "url") {
@@ -44,8 +45,38 @@ class PagesSchedulerApi(facebookService: FacebookService, calendarService: Calen
   private def startSchedulerRoute =
     path("scheduler" / "start") {
       get {
-        SchedulerService.start(facebookService, calendarService)
+        SchedulerService.start(facebookService)
         complete(StatusCodes.OK -> None)
+      }
+    }
+
+
+  //  private def googleCallbackRoute =
+  //    path("Callback") {
+  //      get {
+  //        onComplete(Http().singleRequest(
+  //          HttpRequest(
+  //            method = HttpMethods.GET,
+  //            uri = Uri("http://localhost:44497")
+  //          )
+  //        )) {
+  //          case Success(response) =>
+  //            response.status match {
+  //              case StatusCodes.OK =>
+  //                complete(StatusCodes.OK -> "YEST!")
+  //              case _ =>
+  //                logger.error(response.entity.toString)
+  //                complete(StatusCodes.OK -> "DUPA")
+  //            }
+  //          case Failure(ex) => failWith(ex)
+  //        }
+  //      }
+  //    }
+
+  private def helloWorldRoute =
+    path("") {
+      get {
+        complete(StatusCodes.OK -> "Hello world")
       }
     }
 

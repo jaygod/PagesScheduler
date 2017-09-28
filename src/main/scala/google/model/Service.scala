@@ -11,11 +11,14 @@ import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.jackson2.JacksonFactory
 import com.google.api.client.util.store.FileDataStoreFactory
 import com.google.api.services.calendar.CalendarScopes
+import com.typesafe.scalalogging.LazyLogging
+
+import scala.util.Properties
 
 /**
   * Created by kuba on 28/05/2017.
   */
-trait Service {
+trait Service extends LazyLogging {
 
   val httpTransport = new NetHttpTransport
   val jsonFactory = new JacksonFactory
@@ -35,11 +38,17 @@ trait Service {
     val flow = new GoogleAuthorizationCodeFlow.Builder(
       HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, CalendarScopes.all())
       .setDataStoreFactory(DATA_STORE_FACTORY)
-      .setAccessType("offline")
+      .setAccessType("online")
       .build()
 
-    val credential = new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver()).authorize("user")
-    println("Credentials saved to " + DATA_STORE_DIR.getAbsolutePath)
+    val serverReceiver = new LocalServerReceiver.Builder()
+//      .setHost(Properties.envOrElse("HEROKU_URL", "localhost"))
+//      .setHost("https://facebook-pages-scheduler.herokuapp.com")
+      .setPort(Properties.envOrElse("PORT_1", "8080").toInt)
+      .build()
+
+    val credential = new AuthorizationCodeInstalledApp(flow, serverReceiver).authorize("user")
+    logger.info("Credentials saved to " + DATA_STORE_DIR.getAbsolutePath)
 
     credential
   }
