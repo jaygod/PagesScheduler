@@ -1,3 +1,4 @@
+
 name := """facebook-pages-scheduler"""
 
 version := "1.0"
@@ -11,6 +12,8 @@ scalacOptions ++= Seq(
   "-Ywarn-unused", "-Ywarn-unused-import", "-Xfatal-warnings"
 )
 
+enablePlugins(JavaAppPackaging)
+enablePlugins(JavaServerAppPackaging)
 
 libraryDependencies ++= {
   val akkaVsn = "2.4.17"
