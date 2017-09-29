@@ -8,6 +8,7 @@ import com.typesafe.scalalogging.LazyLogging
 import common.ActorSystemSupport
 import facebook.api.FacebookProtocol
 import facebook.service.FacebookService
+import google.service.CalendarService
 import scheduler.service.SchedulerService
 
 import scala.util.{Failure, Success}
@@ -15,15 +16,26 @@ import scala.util.{Failure, Success}
 /**
   * Created by kuba on 14/09/2017.
   */
-class PagesSchedulerApi(facebookService: FacebookService)
+class PagesSchedulerApi(facebookService: FacebookService, calendarService: CalendarService)
   extends CustomExceptionHandler with FacebookProtocol with SprayJsonSupport with LazyLogging with ActorSystemSupport {
 
-  val routes = authUrlRoute ~ authCallbackRoute ~ startSchedulerRoute ~ helloWorldRoute
+  val routes = authUrlRoute ~ authCallbackRoute ~ startSchedulerRoute ~ googleCallbackRoute ~ helloWorldRoute ~
+    googleAuthUrlRoute
 
   private def authUrlRoute =
     path("auth" / "url") {
       get {
         onComplete(facebookService.getLoginDialogUrl) {
+          case Success(authUrl) => complete(StatusCodes.OK -> authUrl)
+          case Failure(ex) => failWith(ex)
+        }
+      }
+    }
+
+  private def googleAuthUrlRoute =
+    path("google" / "auth" / "url") {
+      get {
+        onComplete(calendarService.getLoginDialogUrl()) {
           case Success(authUrl) => complete(StatusCodes.OK -> authUrl)
           case Failure(ex) => failWith(ex)
         }
@@ -51,27 +63,12 @@ class PagesSchedulerApi(facebookService: FacebookService)
     }
 
 
-  //  private def googleCallbackRoute =
-  //    path("Callback") {
-  //      get {
-  //        onComplete(Http().singleRequest(
-  //          HttpRequest(
-  //            method = HttpMethods.GET,
-  //            uri = Uri("http://localhost:44497")
-  //          )
-  //        )) {
-  //          case Success(response) =>
-  //            response.status match {
-  //              case StatusCodes.OK =>
-  //                complete(StatusCodes.OK -> "YEST!")
-  //              case _ =>
-  //                logger.error(response.entity.toString)
-  //                complete(StatusCodes.OK -> "DUPA")
-  //            }
-  //          case Failure(ex) => failWith(ex)
-  //        }
-  //      }
-  //    }
+  private def googleCallbackRoute =
+    path("Callback") {
+      get {
+        complete(StatusCodes.OK -> "YEST!")
+      }
+    }
 
   private def helloWorldRoute =
     path("") {
