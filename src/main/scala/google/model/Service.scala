@@ -5,7 +5,7 @@ import java.io.InputStreamReader
 import com.google.api.client.auth.oauth2.Credential
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver
-import com.google.api.client.googleapis.auth.oauth2.{GoogleAuthorizationCodeFlow, GoogleAuthorizationCodeRequestUrl, GoogleClientSecrets}
+import com.google.api.client.googleapis.auth.oauth2.{GoogleAuthorizationCodeFlow, GoogleClientSecrets}
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.jackson2.JacksonFactory
@@ -38,13 +38,13 @@ trait Service extends LazyLogging {
     val flow = new GoogleAuthorizationCodeFlow.Builder(
       HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, CalendarScopes.all())
       .setDataStoreFactory(DATA_STORE_FACTORY)
-      .setAccessType("online")
+      .setAccessType("offline")
       .build()
 
     val serverReceiver = new LocalServerReceiver.Builder()
-      //      .setHost(Properties.envOrElse("HEROKU_URL", "localhost"))
-      //      .setHost("https://facebook-pages-scheduler.herokuapp.com")
-      .setPort(Properties.envOrElse("PORT_1", "8080").toInt)
+      //      .setHost(Properties.envOrElse("HEROKU_URL", "localhost")-)
+      //      .setHost("facebook-pages-scheduler.herokuapp.com")
+      .setPort(Properties.envOrElse("PORT", "8081").toInt)
       .build()
 
     val credential = new AuthorizationCodeInstalledApp(flow, serverReceiver).authorize("user")
@@ -53,14 +53,5 @@ trait Service extends LazyLogging {
     credential
   }
 
-  def getCredentialsUrl: String = {
-    val JSON_FACTORY = JacksonFactory.getDefaultInstance
-    // Load client secrets.
-    val in = this.getClass.getResourceAsStream("/client_id.json")
-    val clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in))
-
-    new GoogleAuthorizationCodeRequestUrl(
-      clientSecrets, "facebook-pages-scheduler.herokuapp.com/Callback", CalendarScopes.all()).build()
-  }
 }
 

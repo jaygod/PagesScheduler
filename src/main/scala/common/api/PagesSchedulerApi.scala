@@ -8,7 +8,6 @@ import com.typesafe.scalalogging.LazyLogging
 import common.ActorSystemSupport
 import facebook.api.FacebookProtocol
 import facebook.service.FacebookService
-import google.service.CalendarService
 import scheduler.service.SchedulerService
 
 import scala.util.{Failure, Success}
@@ -16,26 +15,15 @@ import scala.util.{Failure, Success}
 /**
   * Created by kuba on 14/09/2017.
   */
-class PagesSchedulerApi(facebookService: FacebookService, calendarService: CalendarService)
+class PagesSchedulerApi(facebookService: FacebookService)
   extends CustomExceptionHandler with FacebookProtocol with SprayJsonSupport with LazyLogging with ActorSystemSupport {
 
-  val routes = authUrlRoute ~ authCallbackRoute ~ startSchedulerRoute ~ googleCallbackRoute ~ helloWorldRoute ~
-    googleAuthUrlRoute
+  val routes = authUrlRoute ~ authCallbackRoute ~ startSchedulerRoute ~ googleCallbackRoute ~ helloWorldRoute
 
   private def authUrlRoute =
     path("auth" / "url") {
       get {
         onComplete(facebookService.getLoginDialogUrl) {
-          case Success(authUrl) => complete(StatusCodes.OK -> authUrl)
-          case Failure(ex) => failWith(ex)
-        }
-      }
-    }
-
-  private def googleAuthUrlRoute =
-    path("google" / "auth" / "url") {
-      get {
-        onComplete(calendarService.getLoginDialogUrl()) {
           case Success(authUrl) => complete(StatusCodes.OK -> authUrl)
           case Failure(ex) => failWith(ex)
         }

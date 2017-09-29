@@ -36,4 +36,7 @@ libraryDependencies ++= {
     "org.postgresql"                % "postgresql"                        % "9.3-1102-jdbc41",
     "org.apache.commons"            % "commons-dbcp2"                     % "2.0.1"
   )
+
 }
+
+mainClass := Some("Main")
