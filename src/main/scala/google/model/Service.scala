@@ -43,7 +43,7 @@ trait Service extends LazyLogging {
 
     val serverReceiver = new LocalServerReceiver.Builder()
       //      .setHost(Properties.envOrElse("HEROKU_URL", "localhost")-)
-      //      .setHost("facebook-pages-scheduler.herokuapp.com")
+      // .setHost("facebook-pages-scheduler.herokuapp.com")
       .setPort(Properties.envOrElse("PORT", "8081").toInt)
       .build()
 
