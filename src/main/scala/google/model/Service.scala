@@ -42,7 +42,6 @@ trait Service extends LazyLogging {
       .build()
 
     val serverReceiver = new LocalServerReceiver.Builder()
-      .setHost("http://remindo.nazwa.pl")
       .setPort(Properties.envOrElse("PORT", "8081").toInt)
       .build()
 
