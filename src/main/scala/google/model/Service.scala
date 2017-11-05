@@ -3,8 +3,7 @@ package google.model
 import java.io.InputStreamReader
 
 import com.google.api.client.auth.oauth2.Credential
-import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp
-import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver
+import com.google.api.client.extensions.java6.auth.oauth2.{AuthorizationCodeInstalledApp, VerificationCodeReceiver}
 import com.google.api.client.googleapis.auth.oauth2.{GoogleAuthorizationCodeFlow, GoogleClientSecrets}
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
 import com.google.api.client.http.javanet.NetHttpTransport
@@ -12,8 +11,7 @@ import com.google.api.client.json.jackson2.JacksonFactory
 import com.google.api.client.util.store.FileDataStoreFactory
 import com.google.api.services.calendar.CalendarScopes
 import com.typesafe.scalalogging.LazyLogging
-
-import scala.util.Properties
+import org.mortbay.jetty.Server
 
 /**
   * Created by kuba on 28/05/2017.
@@ -41,17 +39,40 @@ trait Service extends LazyLogging {
       .setAccessType("offline")
       .build()
 
-    val serverReceiver = new LocalServerReceiver.Builder()
-      //      .setHost(Properties.envOrElse("HEROKU_URL", "localhost")-)
-      // .setHost("facebook-pages-scheduler.herokuapp.com")
-      .setPort(Properties.envOrElse("PORT", "8081").toInt)
-      .build()
 
-    val credential = new AuthorizationCodeInstalledApp(flow, serverReceiver).authorize("user")
+    //    val address = InetAddress.getByName("8081-dot-3119505-dot-devshell.appspot.com")
+    //    val serverReceiver = new LocalServerReceiver.Builder()
+    //      .setHost(Properties.envOrElse("HEROKU_URL", "localhost")-)
+
+    //      .setHost("8081-dot-3119505-dot-devshell.appspot.com")
+    //      .setPort(Properties.envOrElse("PORT", "8081").toInt)
+    //      .build()
+
+    val credential = new AuthorizationCodeInstalledApp(flow, new Reciever()).authorize("user")
     logger.info("Credentials saved to " + DATA_STORE_DIR.getAbsolutePath)
 
     credential
   }
 
+}
+
+class Reciever extends VerificationCodeReceiver {
+  var server: Server = _
+  var code: String = _
+  var port: Int = 8081
+//  var host: String = "localhost"
+
+  override def waitForCode(): String = code
+
+  override def stop() = server.stop()
+
+  override def getRedirectUri = {
+    server = new Server(port)
+    server.getConnectors.foreach(_.setHost("https://8081-dot-3119505-dot-devshell.appspot.com"))
+
+    server.start()
+
+    "https://8081-dot-3119505-dot-devshell.appspot.com"
+  }
 }
 
