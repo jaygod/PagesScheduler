@@ -13,7 +13,8 @@ class CalendarService extends LazyLogging with ActorSystemSupport {
   private val calendar = new Calendar()
 
   def listEvents: Future[List[Event]] =
-    calendar.listEvents(ZonedDateTime.now(), ZonedDateTime.now().plusDays(1))
+    calendar
+      .listEvents(ZonedDateTime.now(), ZonedDateTime.now().plusDays(1))
       .map(filterAlreadyUpdatedEvents)
 
   def update(event: Event): Future[Event] =

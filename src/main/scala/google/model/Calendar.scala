@@ -49,7 +49,7 @@ class Calendar()(implicit executionContext: ExecutionContext) extends Service wi
         .update(calendar, event.id.get,
           Event(
             event.title + eventUpdatedAddon,
-            description = None,
+            event.description,
             event.startTime,
             event.endTime,
             event.participantEmails,
